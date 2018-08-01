@@ -1,194 +1,76 @@
 
-//používat tak, aby se odkomentovala jen jedna část. Pak ukazuje specifickou činnost
-//pokud není "DB" tabulka, tak se vytvoří - např. players
+// Z N A M K Y  v   D B
 
-//1.
-//console.log(firebase);
-//celá db
-
-//2.
-// var ref = firebase.database().ref('players');
-// console.log(ref);
-
-//3. - vytvoření nového záznamu: SET
-// var playersRef = firebase.database().ref('players/');
+// DB: Firebase, create by Martin 1.8.2018
 //
-// playersRef.set({
-//     Martin: {
-//         number:1,
-//         age: 44
-//     },
-//     Pavel: {
-//         number: 2,
-//         age: 88
-//     }
-// });
-
-// nebo super jednoducha struktura
-// var playersRef = firebase.database().ref('ratingok/');
+//demo pro Matěje k ukládání managementu známek
+// - uloží známku do databáze
+// - načte známky z db a vrátí je v 3D Array: znamka | vaha | ID
+// - opraví konkrétní známku a váhu, podle jejího ID
+// - smaze záznam z databáze. Nadobro. Napořád.
 //
-// playersRef.set ({
-//     Amanda: 4,
-//     John: 9,
-//     Peter: 3
-// });
-
-//4. - aktualizace
-// var martinRef = firebase.database().ref('players/Martin');
-//
-// martinRef.update({
-//     "number":110
-// });
+// Pokud není "DB" tabulka, tak se vytvoří - např. players
 
 
-//5. vytvoření unikátního UNID záznamu: PUSH
+function ulozZnamku(rok, predmet, znamka, vaha) {
+//uloží známku do databáze
 
-// var playersRef = firebase.database().ref().child('players');
-//
-// playersRef.push ({
-//     name: "Martin",
-//     number: 1,
-//     age: 22
-// });
-//
-// playersRef.push({
-//     name: "Milenka",
-//     number: 192,
-//     age: 28
-// });
+    let cesta = rok + "/" + predmet;
+    let znamkaRef = firebase.database().ref().child(cesta);
 
+    znamkaRef.push ({
+        znamka: znamka,
+        vaha: vaha
+    });
+}
 
-// 6.  - najít
+function nactiZnamky(rok, predmet) {
+//načte známky z db a vrátí je v 3D Array: znamka | vaha | ID
 
-// var playersRef = firebase.database().ref().child('players');
-// var playersKey = playersRef.key;
-// console.log(playersKey);
-//
-// // 6b.  - transaction: najde "ID" a udělat transakci : age + 1
-//
-// var martinAgeRef = firebase.database().ref().child('players').child('-LIm6MthHe4MU-qsMmwD').child('age');
-// console.log(martinAgeRef);
-// martinAgeRef.transaction(function (currentAge) {
-//     return currentAge + 1;
-// })
+    let cesta = rok + "/" + predmet;
+    let znamkaRef = firebase.database().ref(cesta);
+    let poleZnamek = [ [], [], [] ];
 
+    znamkaRef.on('child_added', function (data, prevChildKey) {
+       let newZnamka = data.val();
+       poleZnamek[0].push(newZnamka.znamka);
+       poleZnamek[1].push(newZnamka.vaha);
+       poleZnamek[2].push(data.key)
+    });
 
-//7. ON - read data: vrátí JSON se všemi daty, díky snapshot.val()
-// var ref = firebase.database().ref();
-// ref.on('value', function (snapshot) {
-//     console.log(snapshot.val());
-// }, function (error) {
-//     console.log("error: " + error.code)
-//     }
-// )
+    return poleZnamek;
+}
 
+function opravZnamku(rok, predmet, id, novaZnamka, novaVaha) {
+//opraví konkrétní známku a váhu, podle jejího ID
 
+    let cesta = rok + "/" + predmet;
+    let znamkaRef = firebase.database().ref().child(cesta).child(id);
+    znamkaRef.update({
+        "znamka":novaZnamka,
+        "vaha":novaVaha
+    });
 
-// 8. seznam všech: s child_added + info, když teď někdo přidá
-// var playersRef = firebase.database().ref('players/');
-//
-// playersRef.on('child_added', function (data, prevChildKey) {
-//     var newPlayer = data.val();
-//     console.log('name: ', newPlayer.name);
-//     console.log('age: ', newPlayer.age);
-//     console.log('number: ', newPlayer.number);
-//     console.log('Predchazeji hrac: ', prevChildKey);
-// });
+}
 
-//EVENT TYPE
-//9. právě když byl aktualizovaný záznam: child_changed
-// var playersRef = firebase.database().ref("players/");
-//
-// playersRef.on("child_changed", function(data) {
-//     var player = data.val();
-//     console.log("The updated player name is " + player.name);
-// });
-//
-// //9.b když byl záznam smazán: child_removed
-// playersRef.on("child_removed", function(data) {
-//     var deletedPlayer = data.val();
-//     console.log(deletedPlayer.name + " has been deleted.");
-// });
+function smazatZnamku(rok, predmet, id) {
+//smaze záznam z databáze. Nadobro. Napořád.
 
+    let cesta = rok + "/" + predmet;
+    let znamkaRef = firebase.database().ref().child(cesta).child(id);
+    znamkaRef.remove();
 
-// 10. detach Callback
-// // - nevím co to je za slovo a aktivitu
-// var playersRef = firebase.database().ref("players/");
-//
-// playersRef.on('value', function (data) {
-//     console.log(data.val());
-// }, function (error) {
-//     console.log('error type: ', error.code)
-// });
-//
-// playersRef.off();
+}
 
+const ROK = '2018p2';
+const PREDMET = 'cej';
 
+// ulozZnamku(ROK, PREDMET, 3, 3);
 
-//11. třídění
+let p = nactiZnamky(ROK, PREDMET);
+console.log("ZNAMKY", p);
+// opravZnamku(ROK, PREDMET,"-LImkh5OqaQc7lFgmNsl", 9,3 );
 
-// var playersRef = firebase.database().ref("players/");
-//
-//podle jmena
-// playersRef.orderByChild('name').on('child_added', function (data) {
-//     console.log(data.val().name);
-// });
-
-// podle klič
-// playersRef.orderByKey().on('child_added', function (data) {
-//     console.log(data.key);
-// })
-
-// sort podle value
-// var ratingRef = firebase.database().ref("ratingok/");
-//
-// ratingRef.orderByValue().on("value", function(data) {
-//     data.forEach(function(data) {
-//         console.log("The " + data.key + " rating is " + data.val());
-//     });
-// });
-
-// 12.filtr
-// //vyber 2 od začátku databaze
-// var firstPlayerRef = firebase.database().ref("players/").limitToFirst(2);
-//
-//
-// //vyber 1 od konce databaze
-// var lastPlayerRef = firebase.database().ref('players/').limitToLast(1);
-//
-// firstPlayerRef.on("value", function(data) {
-//     console.log(data.val());
-// }, function (error) {
-//     console.log("Error: " + error.code);
-// });
-//
-// lastPlayerRef.on("value", function(data) {
-//     console.log(data.val());
-// }, function (error) {
-//     console.log("Error: " + error.code);
-// });
-
-// 12b
-// var playersRef = firebase.database().ref("players/");
-
-// //setřid podle jmena a zobraz od slova "Martinos"
-// playersRef.orderByChild("name").startAt("Martinos").on("child_added", function(data) {
-//     console.log("Start at filter: " + data.val().name);
-// });
-//
-// //končí Martinos
-// playersRef.orderByChild("name").endAt("Martinos").on("child_added", function(data) {
-//     console.log("End at filter: " + data.val().name);
-// });
-
-// //konkretni jmeno
-// playersRef.orderByChild("name").equalTo("Martin").on("child_added", function(data) {
-//     console.log("Equal to filter: " + data.val().name);
-// });
-
-//konkretni hodnota - věk začíná od hodnoty 22
-// playersRef.orderByChild("age").startAt(28).on("child_added", function(data) {
-//     console.log("Age filter: " + data.val().name);
-// });
+smazatZnamku(ROK, PREDMET, "-LIn0_iWXMsVuFekXLQB");
 
 

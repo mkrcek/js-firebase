@@ -1,10 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <title>$Title$</title>
+    <title>Firebase Demo Page </title>
+    <link rel="stylesheet" type="text/css" href="app.css">
 </head>
+
 <body>
-$END$
+    <h1>Firebase Demo Page</h1>
+    <h3>podívej se do inspektora - console</h3>
+
+    <h3>a postupně odkomentuj příklady</h3>
+
+    </ol>
+
+
+    <script src="https://www.gstatic.com/firebasejs/5.3.0/firebase.js"></script>
+    <script>
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyCWtQCDFQD7IquiaFYUX6mBqudj_sw4UZ4",
+            authDomain: "gugina-8cfeb.firebaseapp.com",
+            databaseURL: "https://moviefire-71.firebaseio.com",
+            projectId: "gugina-8cfeb",
+            storageBucket: "gugina-8cfeb.appspot.com",
+            messagingSenderId: "1019459663990"
+        };
+        firebase.initializeApp(config);
+    </script>
+
+
+
+    <script type="text/javascript" src="app.js"></script>
 </body>
+
 </html>
